@@ -7,6 +7,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { EditorToolbar } from "@/components/EditorToolbar";
 import { ShareDialog } from "@/components/ShareDialog";
 import { VersionHistory } from "@/components/VersionHistory";
+import { ExportMenu } from "@/components/ExportMenu";
 
 type DocumentData = {
   id: string;
@@ -62,13 +63,14 @@ export function DocumentEditor({
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-8">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="no-print mb-4 flex items-center justify-between">
         <Link href="/dashboard" className="text-sm text-black/50 hover:text-black">
           ← Back to dashboard
         </Link>
         <div className="flex items-center gap-3">
           {isOwner && <ShareDialog documentId={document.id} />}
           <VersionHistory documentId={document.id} canEdit={canEdit} />
+          <ExportMenu documentId={document.id} />
           {canEdit && (
             <span className="text-xs text-black/40">
               {status === "saving" && "Saving..."}
@@ -107,8 +109,12 @@ export function DocumentEditor({
         placeholder="Untitled Document"
       />
 
-      <div className="rounded-lg border border-black/10">
-        {canEdit && <EditorToolbar editor={editor} />}
+      <div className="print:border-0 rounded-lg border border-black/10">
+        {canEdit && (
+          <div className="no-print">
+            <EditorToolbar editor={editor} />
+          </div>
+        )}
         <EditorContent editor={editor} />
       </div>
     </main>
