@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 type DocumentListItem = {
   id: string;
@@ -18,39 +20,35 @@ export function DocumentList({
   badge: "Owner" | "Shared";
 }) {
   if (documents.length === 0) {
-    return <p className="text-sm text-black/50">{emptyLabel}</p>;
+    return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
   }
 
   return (
-    <ul className="divide-y divide-black/10 rounded-lg border border-black/10">
+    <div className="flex flex-col gap-2">
       {documents.map((doc) => (
-        <li key={doc.id}>
+        <Card key={doc.id} className="p-0">
           <Link
             href={`/documents/${doc.id}`}
-            className="flex items-center justify-between px-4 py-3 hover:bg-black/[0.02]"
+            className="flex flex-col gap-2 px-5 py-4 hover:bg-accent sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
-              <p className="font-medium">{doc.title}</p>
+              <p className="text-base font-medium">{doc.title}</p>
               {doc.owner && (
-                <p className="text-xs text-black/50">Owned by {doc.owner.name}</p>
+                <p className="text-xs text-muted-foreground">Owned by {doc.owner.name}</p>
               )}
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-black/40">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
                 {new Date(doc.updatedAt).toLocaleString()}
               </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs ${
-                  badge === "Owner" ? "bg-black/5 text-black/70" : "bg-blue-50 text-blue-700"
-                }`}
-              >
+              <Badge variant={badge === "Owner" ? "outline" : "secondary"}>
                 {badge}
                 {doc.role ? ` · ${doc.role === "EDITOR" ? "Editor" : "Viewer"}` : ""}
-              </span>
+              </Badge>
             </div>
           </Link>
-        </li>
+        </Card>
       ))}
-    </ul>
+    </div>
   );
 }

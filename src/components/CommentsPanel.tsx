@@ -1,6 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Comment = {
   id: string;
@@ -9,12 +19,18 @@ type Comment = {
   author: { name: string };
 };
 
-export function CommentsPanel({ documentId }: { documentId: string }) {
-  const [open, setOpen] = useState(false);
+export function CommentsPanel({
+  documentId,
+  open,
+  onOpenChange,
+}: {
+  documentId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [body, setBody] = useState("");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function loadComments() {
     const res = await fetch(`/api/documents/${documentId}/comments`);
@@ -24,16 +40,14 @@ export function CommentsPanel({ documentId }: { documentId: string }) {
     }
   }
 
-  async function openPanel() {
-    setOpen(true);
-    setError(null);
-    await loadComments();
-  }
+  useEffect(() => {
+    if (open) loadComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   async function submitComment(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
-    setError(null);
     try {
       const res = await fetch(`/api/documents/${documentId}/comments`, {
         method: "POST",
@@ -45,65 +59,47 @@ export function CommentsPanel({ documentId }: { documentId: string }) {
       setBody("");
       await loadComments();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not post comment");
+      toast.error(err instanceof Error ? err.message : "Could not post comment");
     } finally {
       setPending(false);
     }
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={openPanel}
-        className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-      >
-        Comments
-      </button>
-    );
-  }
-
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(false)}
-        className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-      >
-        Close
-      </button>
-      <div className="absolute right-0 top-10 z-10 w-80 rounded-lg border border-black/10 bg-white p-4 shadow-lg">
-        <h3 className="mb-2 text-sm font-medium">Comments</h3>
-        <ul className="mb-3 max-h-64 space-y-2 overflow-y-auto">
-          {comments.length === 0 && (
-            <li className="text-xs text-black/40">No comments yet.</li>
-          )}
-          {comments.map((comment) => (
-            <li key={comment.id} className="border-b border-black/5 pb-2 text-xs">
-              <p className="text-black/70">{comment.body}</p>
-              <p className="mt-1 text-black/40">
-                {comment.author.name} · {new Date(comment.createdAt).toLocaleString()}
-              </p>
-            </li>
-          ))}
-        </ul>
-        {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Comments</DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="max-h-64">
+          <ul className="space-y-2">
+            {comments.length === 0 && (
+              <li className="text-xs text-muted-foreground">No comments yet.</li>
+            )}
+            {comments.map((comment) => (
+              <li key={comment.id} className="border-b pb-2 text-sm">
+                <p className="text-foreground/80">{comment.body}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {comment.author.name} · {new Date(comment.createdAt).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </ScrollArea>
         <form onSubmit={submitComment} className="flex gap-2">
-          <textarea
+          <Textarea
             required
             rows={2}
             placeholder="Add a comment..."
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            className="w-full resize-none rounded border border-black/10 px-2 py-1 text-sm outline-none focus:border-black/30"
+            className="resize-none"
           />
-          <button
-            type="submit"
-            disabled={pending}
-            className="shrink-0 self-end rounded bg-black px-2.5 py-1 text-sm text-white disabled:opacity-50"
-          >
+          <Button type="submit" disabled={pending} className="shrink-0 self-end">
             Post
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

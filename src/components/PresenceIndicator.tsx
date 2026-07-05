@@ -38,7 +38,7 @@ export function PresenceIndicator({ documentId }: { documentId: string }) {
   if (viewers.length === 0) return null;
 
   return (
-    <span className="text-xs text-black/50">
+    <span className="text-xs text-muted-foreground">
       {viewers.length === 1
         ? `${viewers[0]} is also viewing`
         : `${viewers.join(", ")} are also viewing`}

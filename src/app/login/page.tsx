@@ -15,10 +15,10 @@ export default async function LoginPage() {
   });
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6 py-12">
+    <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center gap-8 px-4 py-12 sm:px-6">
       <div>
-        <h1 className="text-2xl font-semibold">Collab Docs</h1>
-        <p className="mt-1 text-sm text-black/60">
+        <h1 className="text-3xl font-semibold sm:text-4xl">Collab Docs</h1>
+        <p className="mt-2 text-base text-muted-foreground">
           This demo uses mocked authentication — pick a seeded user to continue. No password required.
         </p>
       </div>

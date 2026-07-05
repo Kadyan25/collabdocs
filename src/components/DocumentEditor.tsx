@@ -2,12 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { MoreHorizontal, MessageSquare, History as HistoryIcon } from "lucide-react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { EditorToolbar } from "@/components/EditorToolbar";
 import { ShareDialog } from "@/components/ShareDialog";
 import { VersionHistory } from "@/components/VersionHistory";
-import { ExportMenu } from "@/components/ExportMenu";
+import { ExportMenuItems } from "@/components/ExportMenu";
 import { PresenceIndicator } from "@/components/PresenceIndicator";
 import { CommentsPanel } from "@/components/CommentsPanel";
 
@@ -16,6 +27,8 @@ type DocumentData = {
   title: string;
   content: string;
 };
+
+type ActiveDialog = "share" | "history" | "comments" | null;
 
 export function DocumentEditor({
   document,
@@ -29,8 +42,8 @@ export function DocumentEditor({
   ownerName: string;
 }) {
   const [title, setTitle] = useState(document.title);
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -39,15 +52,14 @@ export function DocumentEditor({
     content: document.content,
     editorProps: {
       attributes: {
-        class: "editor-content min-h-[50vh] px-4 py-4 focus:outline-none",
+        class: "editor-content min-h-[50vh] px-4 py-4 focus:outline-none sm:px-6 sm:py-6 sm:text-lg",
       },
     },
   });
 
   async function save() {
     if (!editor) return;
-    setStatus("saving");
-    setError(null);
+    setSaving(true);
     try {
       const res = await fetch(`/api/documents/${document.id}`, {
         method: "PATCH",
@@ -56,66 +68,99 @@ export function DocumentEditor({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not save");
-      setStatus("saved");
+      toast.success("Saved");
     } catch (err) {
-      setStatus("error");
-      setError(err instanceof Error ? err.message : "Could not save");
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-8">
-      <div className="no-print mb-4 flex items-center justify-between">
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
+      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-sm text-black/50 hover:text-black">
-            ← Back to dashboard
+          <Link
+            href="/dashboard"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← Back
           </Link>
           <PresenceIndicator documentId={document.id} />
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {isOwner && <ShareDialog documentId={document.id} />}
-          <VersionHistory documentId={document.id} canEdit={canEdit} />
-          <CommentsPanel documentId={document.id} />
-          <ExportMenu documentId={document.id} />
-          {canEdit && (
-            <span className="text-xs text-black/40">
-              {status === "saving" && "Saving..."}
-              {status === "saved" && "Saved"}
-              {status === "error" && <span className="text-red-600">{error}</span>}
-            </span>
-          )}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setActiveDialog("history")}
+            title="Version history"
+          >
+            <HistoryIcon className="size-4" />
+            <span className="sr-only">Version history</span>
+          </Button>
+          <Button variant="outline" onClick={() => setActiveDialog("comments")}>
+            <MessageSquare className="size-4" />
+            Comments
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className={buttonVariants({ variant: "outline", size: "icon" })}>
+              <MoreHorizontal />
+              <span className="sr-only">More actions</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isOwner && (
+                <DropdownMenuItem onClick={() => setActiveDialog("share")}>
+                  Share
+                </DropdownMenuItem>
+              )}
+              <ExportMenuItems documentId={document.id} />
+            </DropdownMenuContent>
+          </DropdownMenu>
           {canEdit ? (
-            <button
-              onClick={save}
-              disabled={status === "saving"}
-              className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-black/80 disabled:opacity-50"
-            >
-              Save
-            </button>
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Saving..." : "Save"}
+            </Button>
           ) : (
-            <span className="rounded-full bg-black/5 px-2.5 py-1 text-xs text-black/60">
-              View only
-            </span>
+            <Badge variant="secondary">View only</Badge>
           )}
         </div>
       </div>
 
+      {isOwner && (
+        <ShareDialog
+          documentId={document.id}
+          open={activeDialog === "share"}
+          onOpenChange={(open) => setActiveDialog(open ? "share" : null)}
+        />
+      )}
+      <VersionHistory
+        documentId={document.id}
+        canEdit={canEdit}
+        open={activeDialog === "history"}
+        onOpenChange={(open) => setActiveDialog(open ? "history" : null)}
+      />
+      <CommentsPanel
+        documentId={document.id}
+        open={activeDialog === "comments"}
+        onOpenChange={(open) => setActiveDialog(open ? "comments" : null)}
+      />
+
       {!isOwner && (
-        <p className="mb-3 text-xs text-black/50">
+        <p className="mb-4 text-sm text-muted-foreground">
           Shared with you by {ownerName} —{" "}
           {canEdit ? "you can edit and save this document." : "you have view-only access."}
         </p>
       )}
 
-      <input
+      <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         readOnly={!canEdit}
-        className="mb-3 w-full border-none text-2xl font-semibold outline-none"
+        className="mb-4 h-auto border-none px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 sm:text-3xl md:text-3xl"
         placeholder="Untitled Document"
       />
 
-      <div className="print:border-0 rounded-lg border border-black/10">
+      <div className="print:border-0 rounded-lg border">
         {canEdit && (
           <div className="no-print">
             <EditorToolbar editor={editor} />

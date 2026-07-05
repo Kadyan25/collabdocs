@@ -1,17 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Role = "VIEWER" | "EDITOR";
 type Share = { id: string; role: Role; user: { name: string; email: string } };
 
-export function ShareDialog({ documentId }: { documentId: string }) {
-  const [open, setOpen] = useState(false);
+export function ShareDialog({
+  documentId,
+  open,
+  onOpenChange,
+}: {
+  documentId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [shares, setShares] = useState<Share[]>([]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("EDITOR");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function loadShares() {
     const res = await fetch(`/api/documents/${documentId}/share`);
@@ -21,16 +45,14 @@ export function ShareDialog({ documentId }: { documentId: string }) {
     }
   }
 
-  async function openDialog() {
-    setOpen(true);
-    setError(null);
-    await loadShares();
-  }
+  useEffect(() => {
+    if (open) loadShares();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   async function submitShare(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
-    setError(null);
     try {
       const res = await fetch(`/api/documents/${documentId}/share`, {
         method: "POST",
@@ -39,78 +61,62 @@ export function ShareDialog({ documentId }: { documentId: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not share");
+      toast.success(`Shared with ${email} as ${role.toLowerCase()}`);
       setEmail("");
       await loadShares();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not share");
+      toast.error(err instanceof Error ? err.message : "Could not share");
     } finally {
       setPending(false);
     }
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={openDialog}
-        className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-      >
-        Share
-      </button>
-    );
-  }
-
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(false)}
-        className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-      >
-        Close
-      </button>
-      <div className="absolute right-0 top-10 z-10 w-80 rounded-lg border border-black/10 bg-white p-4 shadow-lg">
-        <h3 className="mb-2 text-sm font-medium">Share this document</h3>
-        <form onSubmit={submitShare} className="mb-3 flex gap-2">
-          <input
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Share this document</DialogTitle>
+          <DialogDescription>
+            Grant a seeded user access as a viewer (read-only) or editor.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submitShare} className="flex flex-col gap-2 sm:flex-row">
+          <Input
             type="email"
             required
             placeholder="user@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded border border-black/10 px-2 py-1 text-sm outline-none focus:border-black/30"
           />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            className="rounded border border-black/10 px-1 py-1 text-sm outline-none"
-          >
-            <option value="EDITOR">Editor</option>
-            <option value="VIEWER">Viewer</option>
-          </select>
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded bg-black px-2.5 py-1 text-sm text-white disabled:opacity-50"
-          >
-            Add
-          </button>
+          <div className="flex gap-2">
+            <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="EDITOR">Editor</SelectItem>
+                <SelectItem value="VIEWER">Viewer</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button type="submit" disabled={pending}>
+              Add
+            </Button>
+          </div>
         </form>
-        {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
-        <ul className="space-y-1">
+        <ul className="space-y-1.5">
           {shares.length === 0 && (
-            <li className="text-xs text-black/40">Not shared with anyone yet.</li>
+            <li className="text-xs text-muted-foreground">Not shared with anyone yet.</li>
           )}
           {shares.map((share) => (
-            <li key={share.id} className="flex items-center justify-between text-xs text-black/70">
+            <li key={share.id} className="flex items-center justify-between text-sm">
               <span>
                 {share.user.name} ({share.user.email})
               </span>
-              <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] uppercase text-black/50">
-                {share.role}
-              </span>
+              <Badge variant="secondary">{share.role}</Badge>
             </li>
           ))}
         </ul>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

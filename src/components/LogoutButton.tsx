@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -12,11 +13,8 @@ export function LogoutButton() {
   }
 
   return (
-    <button
-      onClick={logout}
-      className="rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-    >
+    <Button variant="outline" onClick={logout}>
       Switch user
-    </button>
+    </Button>
   );
 }

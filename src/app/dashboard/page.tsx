@@ -33,26 +33,26 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <header className="mb-8 flex items-center justify-between">
+    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-8 sm:py-16">
+      <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Collab Docs</h1>
-          <p className="text-sm text-black/60">
+          <h1 className="text-3xl font-semibold sm:text-4xl">Collab Docs</h1>
+          <p className="mt-1 text-base text-muted-foreground">
             Signed in as {user.name} ({user.email})
           </p>
         </div>
         <LogoutButton />
       </header>
 
-      <section className="mb-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-medium">My Documents</h2>
+      <section className="mb-10">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-medium">My Documents</h2>
           <div className="flex items-center gap-2">
             <ImportButton />
             <NewDocumentButton />
           </div>
         </div>
-        <p className="mb-3 text-xs text-black/40">
+        <p className="mb-4 text-sm text-muted-foreground">
           Import supports .txt and .md files only, up to 1MB.
         </p>
         <DocumentList
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-medium">Shared with Me</h2>
+        <h2 className="mb-4 text-xl font-medium">Shared with Me</h2>
         <DocumentList
           documents={sharedWithRole}
           badge="Shared"

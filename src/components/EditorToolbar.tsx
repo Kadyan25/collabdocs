@@ -1,30 +1,32 @@
 "use client";
 
 import type { Editor } from "@tiptap/react";
+import { Bold, Italic, Underline, Heading1, Heading2, List, ListOrdered } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 function ToolbarButton({
   onClick,
   active,
   label,
-  children,
+  icon: Icon,
 }: {
   onClick: () => void;
   active: boolean;
   label: string;
-  children: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant={active ? "secondary" : "ghost"}
+      size="icon-sm"
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`rounded px-2.5 py-1.5 text-sm font-medium hover:bg-black/5 ${
-        active ? "bg-black/10 text-black" : "text-black/70"
-      }`}
     >
-      {children}
-    </button>
+      <Icon className="size-4" />
+    </Button>
   );
 }
 
@@ -32,58 +34,51 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-black/10 px-2 py-2">
+    <div className="flex flex-wrap items-center gap-1 border-b px-2 py-2">
       <ToolbarButton
         label="Bold"
+        icon={Bold}
         active={editor.isActive("bold")}
         onClick={() => editor.chain().focus().toggleBold().run()}
-      >
-        B
-      </ToolbarButton>
+      />
       <ToolbarButton
         label="Italic"
+        icon={Italic}
         active={editor.isActive("italic")}
         onClick={() => editor.chain().focus().toggleItalic().run()}
-      >
-        <span className="italic">I</span>
-      </ToolbarButton>
+      />
       <ToolbarButton
         label="Underline"
+        icon={Underline}
         active={editor.isActive("underline")}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-      >
-        <span className="underline">U</span>
-      </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-black/10" />
+      />
+      <Separator orientation="vertical" className="mx-1 h-5" />
       <ToolbarButton
         label="Heading 1"
+        icon={Heading1}
         active={editor.isActive("heading", { level: 1 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-      >
-        H1
-      </ToolbarButton>
+      />
       <ToolbarButton
         label="Heading 2"
+        icon={Heading2}
         active={editor.isActive("heading", { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-      >
-        H2
-      </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-black/10" />
+      />
+      <Separator orientation="vertical" className="mx-1 h-5" />
       <ToolbarButton
         label="Bulleted list"
+        icon={List}
         active={editor.isActive("bulletList")}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-      >
-        • List
-      </ToolbarButton>
+      />
       <ToolbarButton
         label="Numbered list"
+        icon={ListOrdered}
         active={editor.isActive("orderedList")}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      >
-        1. List
-      </ToolbarButton>
+      />
     </div>
   );
 }
