@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canAccessDocument, isOwner } from "@/lib/access";
+import { canAccessDocument, canEditDocument, isOwner } from "@/lib/access";
 import { DocumentEditor } from "@/components/DocumentEditor";
 
 export default async function DocumentPage({
@@ -27,6 +27,7 @@ export default async function DocumentPage({
     <DocumentEditor
       document={{ id: document.id, title: document.title, content: document.content }}
       isOwner={isOwner(document, user.id)}
+      canEdit={canEditDocument(document, document.shares, user.id)}
       ownerName={document.owner.name}
     />
   );

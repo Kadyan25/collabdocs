@@ -5,6 +5,7 @@ type DocumentListItem = {
   title: string;
   updatedAt: Date;
   owner?: { name: string; email: string } | null;
+  role?: "VIEWER" | "EDITOR";
 };
 
 export function DocumentList({
@@ -44,6 +45,7 @@ export function DocumentList({
                 }`}
               >
                 {badge}
+                {doc.role ? ` · ${doc.role === "EDITOR" ? "Editor" : "Viewer"}` : ""}
               </span>
             </div>
           </Link>

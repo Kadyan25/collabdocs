@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { canAccessDocument, isOwner } from "@/lib/access";
+import { canAccessDocument, canEditDocument, isOwner } from "@/lib/access";
 import { updateDocumentSchema } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-response";
 import { sanitizeDocumentHtml } from "@/lib/sanitize";
@@ -24,7 +24,11 @@ export async function GET(
     return errorResponse("You don't have access to this document", 403);
   }
 
-  return NextResponse.json({ document, isOwner: isOwner(document, user.id) });
+  return NextResponse.json({
+    document,
+    isOwner: isOwner(document, user.id),
+    canEdit: canEditDocument(document, document.shares, user.id),
+  });
 }
 
 export async function PATCH(
@@ -41,8 +45,8 @@ export async function PATCH(
   });
 
   if (!document) return errorResponse("Document not found", 404);
-  if (!canAccessDocument(document, document.shares, user.id)) {
-    return errorResponse("You don't have access to this document", 403);
+  if (!canEditDocument(document, document.shares, user.id)) {
+    return errorResponse("You don't have edit access to this document", 403);
   }
 
   const body = await request.json().catch(() => null);

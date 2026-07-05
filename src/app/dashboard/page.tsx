@@ -19,10 +19,18 @@ export default async function DashboardPage() {
     }),
     prisma.document.findMany({
       where: { shares: { some: { userId: user.id } } },
-      include: { owner: { select: { name: true, email: true } } },
+      include: {
+        owner: { select: { name: true, email: true } },
+        shares: { where: { userId: user.id }, select: { role: true } },
+      },
       orderBy: { updatedAt: "desc" },
     }),
   ]);
+
+  const sharedWithRole = shared.map((doc) => ({
+    ...doc,
+    role: doc.shares[0]?.role ?? "VIEWER",
+  }));
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
@@ -57,7 +65,7 @@ export default async function DashboardPage() {
       <section>
         <h2 className="mb-3 text-lg font-medium">Shared with Me</h2>
         <DocumentList
-          documents={shared}
+          documents={sharedWithRole}
           badge="Shared"
           emptyLabel="Nothing has been shared with you yet."
         />

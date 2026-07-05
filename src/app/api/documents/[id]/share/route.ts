@@ -63,7 +63,7 @@ export async function POST(
   }
 
   const share = await prisma.documentShare.create({
-    data: { documentId: id, userId: targetUser.id },
+    data: { documentId: id, userId: targetUser.id, role: parsed.data.role },
     include: { user: { select: { id: true, name: true, email: true } } },
   });
 

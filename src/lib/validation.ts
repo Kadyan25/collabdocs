@@ -15,6 +15,7 @@ export const updateDocumentSchema = z
 
 export const shareDocumentSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  role: z.enum(["VIEWER", "EDITOR"]).default("EDITOR"),
 });
 
 export const loginSchema = z.object({

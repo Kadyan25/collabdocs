@@ -18,8 +18,11 @@ model User {
   name      String
   createdAt DateTime @default(now())
 
-  documents Document[]      @relation("OwnedDocuments")
-  shares    DocumentShare[]
+  documents        Document[]        @relation("OwnedDocuments")
+  shares           DocumentShare[]
+  versionsCreated  DocumentVersion[]
+  presence         DocumentPresence[]
+  comments         Comment[]
 }
 
 model Document {
@@ -29,17 +32,57 @@ model Document {
   ownerId   String
   owner     User     @relation("OwnedDocuments", fields: [ownerId], references: [id])
   shares    DocumentShare[]
+  versions  DocumentVersion[]
+  presence  DocumentPresence[]
+  comments  Comment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+enum ShareRole {
+  VIEWER
+  EDITOR
+}
+
 model DocumentShare {
+  id         String    @id @default(cuid())
+  documentId String
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  role       ShareRole @default(EDITOR)
+  createdAt  DateTime  @default(now())
+
+  @@unique([documentId, userId])
+}
+
+model DocumentVersion {
   id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  title      String
+  content    String
+  createdById String
+  createdBy  User     @relation(fields: [createdById], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model DocumentPresence {
   documentId String
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   userId     String
   user       User     @relation(fields: [userId], references: [id])
-  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
 
-  @@unique([documentId, userId])
+  @@id([documentId, userId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  body       String
+  createdAt  DateTime @default(now())
 }

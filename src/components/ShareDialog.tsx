@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 
-type Share = { id: string; user: { name: string; email: string } };
+type Role = "VIEWER" | "EDITOR";
+type Share = { id: string; role: Role; user: { name: string; email: string } };
 
 export function ShareDialog({ documentId }: { documentId: string }) {
   const [open, setOpen] = useState(false);
   const [shares, setShares] = useState<Share[]>([]);
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<Role>("EDITOR");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export function ShareDialog({ documentId }: { documentId: string }) {
       const res = await fetch(`/api/documents/${documentId}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, role }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not share");
@@ -65,7 +67,7 @@ export function ShareDialog({ documentId }: { documentId: string }) {
       >
         Close
       </button>
-      <div className="absolute right-0 top-10 z-10 w-72 rounded-lg border border-black/10 bg-white p-4 shadow-lg">
+      <div className="absolute right-0 top-10 z-10 w-80 rounded-lg border border-black/10 bg-white p-4 shadow-lg">
         <h3 className="mb-2 text-sm font-medium">Share this document</h3>
         <form onSubmit={submitShare} className="mb-3 flex gap-2">
           <input
@@ -76,6 +78,14 @@ export function ShareDialog({ documentId }: { documentId: string }) {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded border border-black/10 px-2 py-1 text-sm outline-none focus:border-black/30"
           />
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as Role)}
+            className="rounded border border-black/10 px-1 py-1 text-sm outline-none"
+          >
+            <option value="EDITOR">Editor</option>
+            <option value="VIEWER">Viewer</option>
+          </select>
           <button
             type="submit"
             disabled={pending}
@@ -90,8 +100,13 @@ export function ShareDialog({ documentId }: { documentId: string }) {
             <li className="text-xs text-black/40">Not shared with anyone yet.</li>
           )}
           {shares.map((share) => (
-            <li key={share.id} className="text-xs text-black/70">
-              {share.user.name} ({share.user.email})
+            <li key={share.id} className="flex items-center justify-between text-xs text-black/70">
+              <span>
+                {share.user.name} ({share.user.email})
+              </span>
+              <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] uppercase text-black/50">
+                {share.role}
+              </span>
             </li>
           ))}
         </ul>
