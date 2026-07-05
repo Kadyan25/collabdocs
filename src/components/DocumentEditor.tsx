@@ -8,6 +8,7 @@ import { EditorToolbar } from "@/components/EditorToolbar";
 import { ShareDialog } from "@/components/ShareDialog";
 import { VersionHistory } from "@/components/VersionHistory";
 import { ExportMenu } from "@/components/ExportMenu";
+import { PresenceIndicator } from "@/components/PresenceIndicator";
 
 type DocumentData = {
   id: string;
@@ -64,9 +65,12 @@ export function DocumentEditor({
   return (
     <main className="mx-auto max-w-3xl px-6 py-8">
       <div className="no-print mb-4 flex items-center justify-between">
-        <Link href="/dashboard" className="text-sm text-black/50 hover:text-black">
-          ← Back to dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="text-sm text-black/50 hover:text-black">
+            ← Back to dashboard
+          </Link>
+          <PresenceIndicator documentId={document.id} />
+        </div>
         <div className="flex items-center gap-3">
           {isOwner && <ShareDialog documentId={document.id} />}
           <VersionHistory documentId={document.id} canEdit={canEdit} />
