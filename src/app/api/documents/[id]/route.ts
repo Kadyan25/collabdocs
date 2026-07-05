@@ -5,6 +5,7 @@ import { canAccessDocument, canEditDocument, isOwner } from "@/lib/access";
 import { updateDocumentSchema } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-response";
 import { sanitizeDocumentHtml } from "@/lib/sanitize";
+import { snapshotDocumentVersion } from "@/lib/versions";
 
 export async function GET(
   _request: NextRequest,
@@ -54,6 +55,8 @@ export async function PATCH(
   if (!parsed.success) {
     return errorResponse(parsed.error.issues[0]?.message ?? "Invalid update", 400);
   }
+
+  await snapshotDocumentVersion(document, user.id);
 
   const updated = await prisma.document.update({
     where: { id },

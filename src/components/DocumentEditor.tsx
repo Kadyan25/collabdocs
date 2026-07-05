@@ -6,6 +6,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { EditorToolbar } from "@/components/EditorToolbar";
 import { ShareDialog } from "@/components/ShareDialog";
+import { VersionHistory } from "@/components/VersionHistory";
 
 type DocumentData = {
   id: string;
@@ -67,6 +68,7 @@ export function DocumentEditor({
         </Link>
         <div className="flex items-center gap-3">
           {isOwner && <ShareDialog documentId={document.id} />}
+          <VersionHistory documentId={document.id} canEdit={canEdit} />
           {canEdit && (
             <span className="text-xs text-black/40">
               {status === "saving" && "Saving..."}
