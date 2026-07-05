@@ -9,6 +9,7 @@ import { ShareDialog } from "@/components/ShareDialog";
 import { VersionHistory } from "@/components/VersionHistory";
 import { ExportMenu } from "@/components/ExportMenu";
 import { PresenceIndicator } from "@/components/PresenceIndicator";
+import { CommentsPanel } from "@/components/CommentsPanel";
 
 type DocumentData = {
   id: string;
@@ -71,9 +72,10 @@ export function DocumentEditor({
           </Link>
           <PresenceIndicator documentId={document.id} />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {isOwner && <ShareDialog documentId={document.id} />}
           <VersionHistory documentId={document.id} canEdit={canEdit} />
+          <CommentsPanel documentId={document.id} />
           <ExportMenu documentId={document.id} />
           {canEdit && (
             <span className="text-xs text-black/40">
