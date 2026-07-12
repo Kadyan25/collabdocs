@@ -1,6 +1,6 @@
 # Collab Docs
 
-A lightweight collaborative document editor — create, format, save, share, and import documents. Built for a timeboxed take-home assignment; see `architecture.md` for scope and tradeoffs.
+A lightweight collaborative document editor — create, format, save, share, and import documents. Built for a timeboxed take-home assignment.
 
 ## Features
 
@@ -88,4 +88,4 @@ tests/integration/       Vitest integration tests (real HTTP + real test DB)
 
 ## Deployment
 
-Deployed on Railway (web service + Postgres plugin in the same project). See `SUBMISSION.md` for the live URL.
+Live at **https://collab-docs-production-866c.up.railway.app** — deployed on Railway (web service + Postgres plugin in the same project). The production database is migrated and seeded, so the accounts in the table above work there too.
