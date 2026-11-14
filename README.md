@@ -1,6 +1,6 @@
 # Collab Docs
 
-A lightweight collaborative document editor — create, format, save, share, and import documents. Built for a timeboxed take-home assignment.
+A lightweight collaborative document editor — create, format, save, share, and import documents.
 
 ## Features
 
@@ -10,7 +10,7 @@ A lightweight collaborative document editor — create, format, save, share, and
 - Share a document with another (seeded) user by email, as a **Viewer** (read-only) or **Editor** — owner vs shared documents are visually distinguished on the dashboard
 - Mocked authentication — no real accounts/passwords, pick a seeded user from the login screen
 
-**Stretch features** (beyond the core scope):
+**Additional features:**
 - Version history — every save keeps a snapshot; restore any previous version
 - Export to Markdown (.md download) or PDF (browser print dialog)
 - Presence indicator — see who else currently has a document open (poll-based, not real-time cursors)
